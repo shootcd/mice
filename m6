@@ -1,0 +1,72 @@
+###Train an SVM regressor on the California Housing Dataset 
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
+
+train = pd.read_csv("california_housing_train.csv")
+test  = pd.read_csv("california_housing_test.csv")
+print(train.info(), '\n', test.info())
+
+# 3) Combine, drop unused, and prepare target
+y = train['median_house_value'].values
+data = pd.concat((train, test)).reset_index(drop=True)
+data.drop(['longitude', 'latitude'], axis=1, inplace=True)
+
+
+# 4) Quick EDA
+sns.heatmap(data.corr(), cmap='coolwarm')
+plt.show()
+sns.lmplot(x='median_income', y='median_house_value', data=train)
+sns.lmplot(x='housing_median_age', y='median_house_value', data=train)
+sns.pairplot(train, palette='rainbow')
+plt.show()
+
+
+# 5) Feature selection & fill missing
+features = ['total_rooms', 'total_bedrooms', 'housing_median_age',
+            'median_income', 'population', 'households']
+data = data[features].fillna(data.mean())
+
+
+# 6) Split back & train/test split
+n_train = train.shape[0]
+X = data[:n_train]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+# 7) Scale X & y
+sc_X = StandardScaler()
+X_train = sc_X.fit_transform(X_train)
+X_test  = sc_X.transform(X_test)
+
+
+
+sc_y = StandardScaler()
+y_train_scaled = sc_y.fit_transform(y_train.reshape(-1, 1)).ravel()
+y_test_scaled  = sc_y.transform(y_test.reshape(-1, 1)).ravel()
+
+
+# 8) Fit SVR
+svr = SVR(kernel='rbf')
+svr.fit(X_train, y_train_scaled)
+
+
+
+# 9) Predict & inverse-scale
+y_pred = sc_y.inverse_transform(svr.predict(X_test).reshape(-1, 1)).flatten()
+
+
+
+# 10) Compare
+df = pd.DataFrame({
+    'Real Values': sc_y.inverse_transform(y_test_scaled.reshape(-1, 1)).flatten(),
+    'Predicted Values': y_pred
+})
+print(df.head())
+
+
