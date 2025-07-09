@@ -1,6 +1,17 @@
 ###Implement Regression to predict fuel efficiency using Tensorflow (Auto MPG dataset) 
 
+conda create -n tfenv python=3.10 -y
+conda activate tfenv
 
+pip install tensorflow
+pip install notebook ipykernel
+
+python -m ipykernel install --user --name=tfenv --display-name "Python (TensorFlow)"
+
+jupyter notebook
+
+import tensorflow as tf
+print("TensorFlow version:", tf._version_)
 
 
 
