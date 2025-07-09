@@ -1,0 +1,151 @@
+#####Classification of images of clothing using Tensorflow (Fashion MNIST dataset) 
+
+conda create -n tfenv python=3.10 -y
+conda activate tfenv
+
+pip install tensorflow
+pip install notebook ipykernel
+
+python -m ipykernel install --user --name=tfenv --display-name "Python (TensorFlow)"
+
+jupyter notebook
+
+import tensorflow as tf
+print("TensorFlow version:", tf._version_)
+
+
+
+################Actual code#########################################
+
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models 
+import matplotlib.pyplot as plt 
+ 
+# Load the Fashion MNIST dataset 
+(train_images, train_labels), (test_images, test_labels) = datasets.fashion_mnist.load_data() 
+ 
+# Normalize the images to a range of 0 to 1 
+train_images, test_images = train_images / 255.0, test_images / 255.0 
+ 
+model = models.Sequential([ 
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)), 
+    layers.MaxPooling2D((2, 2)), 
+    layers.Conv2D(64, (3, 3), activation='relu'), 
+    layers.MaxPooling2D((2, 2)), 
+    layers.Conv2D(64, (3, 3), activation='relu'), 
+    layers.Flatten(), 
+    layers.Dense(64, activation='relu'), 
+    layers.Dense(10, activation='softmax') 
+])
+
+
+
+
+
+model.compile(optimizer='adam', 
+              loss='sparse_categorical_crossentropy', 
+              metrics=['accuracy']) 
+ 
+# Reshape the data to include the channel dimension 
+train_images = train_images.reshape((train_images.shape[0], 28, 28, 1)) 
+test_images = test_images.reshape((test_images.shape[0], 28, 28, 1)) 
+
+
+
+
+
+
+# Train the model 
+history = model.fit(train_images, train_labels, epochs=10, validation_data=(test_images, test_labels)) 
+
+
+
+
+test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2) 
+print(f'\nTest accuracy: {test_acc:.2f}')
+
+
+
+
+plt.figure(figsize=(12, 4)) 
+ 
+plt.subplot(1, 2, 1) 
+plt.plot(history.history['accuracy'], label='Training Accuracy') 
+plt.plot(history.history['val_accuracy'], label='Valida on Accuracy') 
+plt.xlabel('Epoch') 
+plt.ylabel('Accuracy') 
+plt.legend() 
+plt.title('Accuracy') 
+ 
+plt.subplot(1, 2, 2) 
+plt.plot(history.history['loss'], label='Training Loss') 
+plt.plot(history.history['val_loss'], label='Valida on Loss') 
+plt.xlabel('Epoch') 
+plt.ylabel('Loss') 
+plt.legend() 
+plt.title('Loss') 
+ 
+plt.show()
+
+
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Predict on test images
+predictions = model.predict(test_images)
+
+# Define the class names
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+# Function to plot the image and prediction label
+def plot_image(predictions_array, true_label, img):
+    plt.grid(False)
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.imshow(img, cmap=plt.cm.binary)
+
+    predicted_label = np.argmax(predictions_array)
+    if predicted_label == true_label:
+        color = 'blue'
+    else:
+        color = 'red'
+
+    plt.xlabel(f"{class_names[predicted_label]} {100*np.max(predictions_array):2.0f}% ({class_names[true_label]})", color=color)
+
+# Function to plot the bar graph of prediction probabilities
+def plot_value_array(predictions_array, true_label):
+    plt.grid(False)
+    plt.xticks(range(10))
+    plt.yticks([])
+    thisplot = plt.bar(range(10), predictions_array, color="#777777")
+    plt.ylim([0, 1])
+
+    predicted_label = np.argmax(predictions_array)
+
+    thisplot[predicted_label].set_color('red')
+    thisplot[true_label].set_color('blue')
+
+# Plot the first 15 test images with predictions
+num_rows = 5
+num_cols = 3
+num_images = num_rows * num_cols
+plt.figure(figsize=(2 * 2 * num_cols, 2 * num_rows))
+for i in range(num_images):
+    plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
+    plot_image(predictions[i], test_labels[i], test_images[i].reshape(28, 28))
+    plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
+    plot_value_array(predictions[i], test_labels[i])
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
