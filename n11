@@ -1,0 +1,81 @@
+#### financial fraud
+
+# Install needed packages (only run once in terminal or Jupyter)
+# !pip install scikit-learn nltk
+
+import re
+import string
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+import nltk
+from nltk.corpus import stopwords
+
+# Download NLTK resources (only needed once)
+nltk.download('stopwords')
+nltk.download('punkt')
+
+# Sample SMS data
+data = {
+    'sms': [
+        "Your account has been blocked due to suspicious login. Click http://bit.ly/bank123 to verify.",
+        "Your transaction of INR 10,000 has been credited to your account ending in 1234.",
+        "URGENT: Your NetBanking is temporarily locked. Reset here: http://fraud.link",
+        "Reminder: Your EMI of INR 3456 is due on 5th July. Pay via app to avoid penalty.",
+        "Congratulations! You've won a free iPhone from HDFC Bank. Click to claim now!",
+        "Your debit card was used at Amazon for INR 2,450.",
+        "Update your KYC now to avoid account suspension. Visit http://fakekyc.com",
+        "Thank you for using ICICI Bank. Your balance is INR 56,780.",
+        "Click here to unlock your blocked account: http://scamlink.com",
+        "Dear Customer, your UPI transaction of INR 600 is successful."
+    ],
+    'label': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # 1 = Fraud, 0 = Genuine
+}
+
+df = pd.DataFrame(data)
+
+# Preprocessing function
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"http\S+", "", text)  # remove links
+    text = re.sub(r"\d+", "", text)      # remove numbers
+    text = text.translate(str.maketrans('', '', string.punctuation))  # remove punctuation
+    stop_words = set(stopwords.words('english'))
+    text = ' '.join(word for word in text.split() if word not in stop_words)
+    return text
+
+# Clean the SMS text
+df['clean_sms'] = df['sms'].apply(clean_text)
+
+# Vectorization
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df['clean_sms'])
+y = df['label']
+
+# Train/test split with stratification to preserve class balance
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Train logistic regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))
+
+# Function to predict custom SMS
+def predict_sms(sms):
+    sms_clean = clean_text(sms)
+    sms_vector = vectorizer.transform([sms_clean])
+    prediction = model.predict(sms_vector)[0]
+    return "FRAUD" if prediction == 1 else "NOT FRAUD"
+
+# Test prediction
+test_sms = "We noticed unusual login to your bank account. Click to reset: http://scam.link"
+print(f"\nSMS: {test_sms}")
+print("Prediction:", predict_sms(test_sms))
