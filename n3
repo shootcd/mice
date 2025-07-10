@@ -1,0 +1,44 @@
+####ngram and trigram
+
+
+import nltk 
+nltk.download('punkt') 
+string= "i am your best friend always and forever"
+qt=nltk.word_tokenize(string) 
+qt 
+qu=list(nltk.bigrams(qt)) 
+qu 
+
+import nltk 
+nltk.download('punkt') 
+string= "i am your best friend always and forever"
+qt=nltk.word_tokenize(string) 
+qt 
+qu=list(nltk.trigrams(qt)) 
+qu 
+
+import nltk 
+nltk.download('punkt') 
+string= "i am your best friend always and forever"
+qt=nltk.word_tokenize(string) 
+qt 
+qu=list(nltk.ngrams(qt,6)) 
+qu 
+
+
+
+#############################################
+from nltk.util import ngrams
+
+sentence = "The quick brown fox jumps over the lazy dog."
+words = sentence.split()
+
+print("Bigrams:")
+print(list(ngrams(words, 2)))
+
+print("\nTrigrams:")
+print(list(ngrams(words, 3)))
+
+
+
+
