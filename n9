@@ -1,0 +1,86 @@
+####### Customer service
+
+# Install required packages if not already installed:
+# !pip install spacy scikit-learn nltk
+
+import re
+import spacy
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.linear_model import LogisticRegression
+import nltk
+nltk.download('punkt')
+
+# Load spaCy model
+nlp = spacy.load("en_core_web_sm")
+
+# Sample Customer Service Data
+data = [
+    "I want a refund for the damaged product I received.",
+    "The payment gateway is not working properly.",
+    "How much does this product cost? Is there a discount?",
+    "The delivery was late and the item is broken.",
+    "I need help with setting up the product I purchased.",
+    "Can you send me the invoice again?",
+    "My order was cancelled without notice. Not happy.",
+    "I love the product! Great quality and fast delivery.",
+    "Your app crashes every time I try to open it.",
+    "Is there any offer on this item today?"
+]
+
+# ========== 1. Preprocess Text ==========
+def preprocess(text):
+    doc = nlp(text.lower())
+    tokens = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
+    return " ".join(tokens)
+
+processed_data = [preprocess(sentence) for sentence in data]
+
+# ========== 2. Intent Detection (Simple Rule-Based) ==========
+def detect_intent(text):
+    text = text.lower()
+    if "refund" in text or "return" in text:
+        return "Refund"
+    elif "price" in text or "cost" in text or "offer" in text or "discount" in text:
+        return "Sales Inquiry"
+    elif "help" in text or "setup" in text or "invoice" in text:
+        return "Support"
+    elif "not working" in text or "broken" in text or "cancelled" in text:
+        return "Complaint"
+    else:
+        return "General"
+
+intents = [detect_intent(text) for text in data]
+
+# ========== 3. Topic Modeling ==========
+def show_topics(texts, n_topics=2):
+    vec = CountVectorizer(max_df=0.95, min_df=2, stop_words='english')
+    X = vec.fit_transform(texts)
+    lda = LatentDirichletAllocation(n_components=n_topics, random_state=42)
+    lda.fit(X)
+
+    feature_names = vec.get_feature_names_out()
+    for idx, topic in enumerate(lda.components_):
+        print(f"\n🧠 Topic #{idx + 1}:")
+        print(", ".join([feature_names[i] for i in topic.argsort()[-5:]]))
+
+show_topics(processed_data)
+
+# ========== 4. Train Classifier ==========
+vec = TfidfVectorizer()
+X_vec = vec.fit_transform(processed_data)
+clf = LogisticRegression()
+clf.fit(X_vec, intents)
+
+# Test the model
+test_input = "I need a discount on my purchase"
+test_proc = preprocess(test_input)
+predicted_intent = clf.predict(vec.transform([test_proc]))[0]
+
+print(f"\n📌 Test input: '{test_input}'")
+print(f"Predicted Intent: {predicted_intent}")
+
+# ========== 5. Summary Report ==========
+print("\n📊 Summary Report:")
+for text, intent in zip(data, intents):
+    print(f"- {intent}: {text}")
