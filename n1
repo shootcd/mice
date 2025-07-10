@@ -1,0 +1,18 @@
+### Sentence segmentation and word tokenization
+
+import nltk
+from nltk.tokenize import word_tokenize, sent_tokenize
+
+# Download the Punkt tokenizer
+nltk.download('punkt')
+
+# Sample text
+text = "Natural Language Processing is fun. NLP helps computers understand text."
+
+# Word Tokenization
+word_tokens = word_tokenize(text)
+print("Word Tokens:", word_tokens)
+
+# Sentence Tokenization
+sentence_tokens = sent_tokenize(text)
+print("Sentence Tokens:", sentence_tokens)
