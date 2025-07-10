@@ -1,0 +1,45 @@
+###POS tagging
+################# HMM #######################
+
+import nltk
+nltk.download('treebank')
+
+from nltk.corpus import treebank
+train, test = treebank.tagged_sents()[:3000], treebank.tagged_sents()[3000:]
+
+import nltk
+from nltk.tag import hmm
+from nltk.corpus import treebank
+
+# Load data
+train, test = treebank.tagged_sents()[:3000], treebank.tagged_sents()[3000:]
+
+# Train HMM tagger
+tagger = hmm.HiddenMarkovModelTrainer().train(train)
+
+# Evaluate
+print(f"Accuracy: {tagger.accuracy(test)*100:.2f}%")
+
+# Tag example
+sentence = nltk.word_tokenize("The quick brown fox jumped over the lazy dog.")
+tags = tagger.tag(sentence)
+
+print("\nPOS Tags:")
+for word, tag in tags:
+    print(f"{word}: {tag}")
+
+
+#########################33 Neural ###########################
+!python -m spacy download en_core_web_sm
+
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+doc = nlp("The quick brown fox jumped over the lazy dog.")
+
+print("\nPOS Tags:")
+for token in doc:
+    print(f"{token.text}: {token.pos_}")
+
+
+
