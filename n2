@@ -1,0 +1,32 @@
+###########Stemming and lemmetiztion
+
+import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+from tabulate import tabulate
+
+# Download required resources
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+# Sample text
+text = "The children are playing with the boxes in the gardens"
+
+# Tokenize the text
+words = word_tokenize(text)
+
+# Initialize stemmer and lemmatizer
+stemmer = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
+
+# Prepare data for table
+table_data = []
+for word in words:
+    stemmed = stemmer.stem(word)
+    lemmatized = lemmatizer.lemmatize(word)
+    table_data.append([word, stemmed, lemmatized])
+
+# Display table
+headers = ["Original Word", "Stemmed", "Lemmatized"]
+print(tabulate(table_data, headers=headers, tablefmt="grid"))
