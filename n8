@@ -1,0 +1,28 @@
+###### text summarization
+
+pip install sumy
+
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.text_rank import TextRankSummarizer
+
+
+text = """
+Natural Language Processing (NLP) is a field of artificial intelligence that gives machines the ability to read, understand, and derive meaning from human languages. 
+It is used in many applications such as chatbots, sentiment analysis, language translation, and more. 
+Text summarization is a subtask of NLP that aims to produce a concise and meaningful summary of a longer text. 
+There are two main types of summarization: extractive and abstractive. 
+Extractive summarization picks important sentences from the text, while abstractive summarization generates new sentences to capture the meaning.
+"""
+
+# Parse the text
+parser = PlaintextParser.from_string(text, Tokenizer("english"))
+
+# Initialize summarizer
+summarizer = TextRankSummarizer()
+
+# Summarize and display 2 sentences
+summary = summarizer(parser.document, 2)
+print("Summary:\n")
+for sentence in summary:
+    print(sentence)
