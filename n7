@@ -1,0 +1,17 @@
+##### Name entity relation
+
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+doc = nlp("""
+Apple Inc. was founded by Steve Jobs, Steve Wozniak, and Ronald Wayne in April 1976.
+Its headquarters are in Cupertino, California. The company launched the iPhone in 2007.
+""")
+
+print("Named Entities:\n")
+for ent in doc.ents:
+    print(f"{ent.text:<30} {ent.label_:<10} ({spacy.explain(ent.label_)})")
+
+
+
