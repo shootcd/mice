@@ -1,0 +1,135 @@
+################## online reviews
+
+first intall this
+pip install textblob nltk vaderSentiment
+
+# Sentiment and Emotion Analysis on Online Reviews
+from textblob import TextBlob
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import nltk
+nltk.download('punkt')
+
+# Sample online product reviews
+reviews = [
+    "This product is amazing! I love it and would buy it again.",
+    "Worst service ever. Completely disappointed and frustrated.",
+    "It's okay, does the job but nothing special.",
+    "The delivery was quick and the packaging was nice.",
+    "I'm angry because the item came broken and nobody replied to my email.",
+    "I'm so happy with my purchase, it made my day!"
+]
+
+# Initialize VADER
+vader = SentimentIntensityAnalyzer()
+
+print("🔍 Sentiment & Emotion Analysis of Reviews:\n")
+
+for review in reviews:
+    # Lexicon-Based Sentiment (TextBlob)
+    blob = TextBlob(review)
+    tb_sentiment = blob.sentiment.polarity
+
+    # Lexicon-Based Sentiment (VADER)
+    vader_scores = vader.polarity_scores(review)
+    vader_sentiment = vader_scores['compound']
+
+    # Rule-Based Emotion (simple keyword check)
+    emotion = "Neutral"
+    if any(word in review.lower() for word in ["love", "happy", "joy", "excited"]):
+        emotion = "Joy"
+    elif any(word in review.lower() for word in ["angry", "mad", "frustrated", "hate"]):
+        emotion = "Anger"
+    elif any(word in review.lower() for word in ["disappointed", "sad", "upset"]):
+        emotion = "Sadness"
+    elif "okay" in review.lower() or "fine" in review.lower():
+        emotion = "Neutral"
+    elif any(word in review.lower() for word in ["amazing", "great", "awesome"]):
+        emotion = "Positive Surprise"
+    elif any(word in review.lower() for word in ["worst", "bad", "broken"]):
+        emotion = "Disgust or Anger"
+
+    # Display result
+    print(f"📝 Review: {review}")
+    print(f"TextBlob Sentiment Score: {tb_sentiment:.2f}")
+    print(f"VADER Sentiment Score: {vader_sentiment:.2f}")
+    print(f"Detected Emotion: {emotion}")
+    print("-" * 60)
+
+
+
+
+##############################2nd code
+
+
+#csv file
+review
+hi !!!! Sita
+heyy..
+hello?
+very good morning
+
+
+import pandas as pd 
+data = pd.read_csv('/content/NLP.csv') 
+print(data.head())
+
+import re 
+def clean(text): 
+  text = re.sub('[^A-Za-z]+', ' ', text) 
+  return text 
+data['Cleaned Reviews'] = data['review'].apply(clean) 
+data.head() 
+
+import nltk 
+nltk.download('punkt') 
+from nltk.tokenize import word_tokenize 
+from nltk import pos_tag 
+nltk.download('stopwords') 
+from nltk.corpus import stopwords 
+nltk.download('wordnet') 
+from nltk.corpus import wordnet 
+nltk.download('averaged_perceptron_tagger') 
+# POS tagger dictionary
+pos_dict = {'J':wordnet.ADJ, 'V':wordnet.VERB, 'N':wordnet.NOUN,'R':wordnet.ADV}
+def token_stop_pos(text): 
+ tags = pos_tag(word_tokenize(text)) 
+ newlist = [] 
+ for word, tag in tags: 
+     if word.lower() not in set(stopwords.words('english')): 
+        newlist.append(tuple([word, pos_dict.get(tag[0])])) 
+ return newlist
+data['POS tagged'] = data['Cleaned Reviews'].apply(token_stop_pos) 
+data.head() 
+from nltk.stem import WordNetLemmatizer
+wordnet_lemmatizer = WordNetLemmatizer()
+def lemmatize(pos_data):
+    lemma_rew = " "
+    for word, pos in pos_data: 
+       if not pos: 
+          lemma = word 
+          lemma_rew = lemma_rew + " " + lemma 
+       else: 
+           lemma = wordnet_lemmatizer.lemmatize(word, pos=pos) 
+           lemma_rew = lemma_rew + " " + lemma 
+    return lemma_rew
+data['Lemma'] = data['POS tagged'].apply(lemmatize) 
+data.head()
+
+from textblob import TextBlob 
+def getSubjectivity(review): 
+ return TextBlob(review).sentiment.subjectivity 
+def getPolarity(review): 
+ return TextBlob(review).sentiment.polarity 
+def analysis(score): 
+ if score < 0: 
+     return 'Negative'
+ elif score == 0: 
+     return 'Neutral'
+ else: 
+    return 'Positive'
+fin_data = pd.DataFrame(data[['review', 'Lemma']]) 
+fin_data['Subjectivity'] = fin_data['Lemma'].apply(getSubjectivity) 
+fin_data['Polarity'] = fin_data['Lemma'].apply(getPolarity) 
+fin_data['Analysis'] = fin_data['Polarity'].apply(analysis) 
+fin_data.head() 
+
