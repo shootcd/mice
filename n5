@@ -1,0 +1,22 @@
+##########Syntactic#
+
+import nltk
+from nltk import CFG, ChartParser
+nltk.download('punkt')
+
+grammar = CFG.fromstring("""
+  S -> NP VP
+  NP -> Det Adj N | Det N
+  VP -> V NP
+  Det -> 'a' | 'the'
+  Adj -> 'big' | 'small' | 'furry'
+  N -> 'cat' | 'mouse' | 'dog'
+  V -> 'chased' | 'saw' | 'liked'
+""")
+
+parser = ChartParser(grammar)
+sentence = "the big cat chased a small mouse".split()
+
+for tree in parser.parse(sentence):
+    print(tree)
+    tree.pretty_print()
