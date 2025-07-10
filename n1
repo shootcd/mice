@@ -16,3 +16,30 @@ print("Word Tokens:", word_tokens)
 # Sentence Tokenization
 sentence_tokens = sent_tokenize(text)
 print("Sentence Tokens:", sentence_tokens)
+
+
+
+
+
+#####################################################
+
+import nltk
+nltk.download('punkt')
+
+nltk.download('punkt_tab')
+input_text = "Hello Students! Today we are performing Practical 1, in Natural Language Processing"
+def segment_and_tokenize(text):
+  sentences = nltk.sent_tokenize(text) #segmentation
+  tokenize = [nltk.word_tokenize(sentence) for sentence in sentences] #word tokenization
+  return sentences,tokenize
+
+sentence_segments, word_tokens = segment_and_tokenize(input_text)
+print("Sentence Segments")
+for sent in sentence_segments:
+  print(sent)
+
+
+print("Word Tokens")
+for token in word_tokens:
+  print(token)
+
