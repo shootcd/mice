@@ -1,0 +1,65 @@
+#############Sentiment analysis
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+
+# Download the lexicon if not already downloaded
+nltk.download('vader_lexicon')
+
+# Step 1: Sample customer reviews
+reviews = [
+    "This phone is amazing! The battery lasts all day.",
+    "Terrible experience. Not worth the money at all.",
+    "Okay product, does the job, but nothing exceptional.",
+    "Absolutely love it. Highly recommended!",
+    "Horrible customer service. I won't buy again.",
+    "Meh. It's neither great nor bad. Just average.",
+    "Camera quality is superb, very happy with it.",
+    "I am disappointed. It broke in a week.",
+    "Good value for the price. Will consider buying again.",
+    "Worst product I have ever used. Avoid at all costs!"
+]
+
+# Step 2: Create DataFrame
+df = pd.DataFrame(reviews, columns=["Review"])
+
+# Step 3: Initialize VADER sentiment analyzer
+sid = SentimentIntensityAnalyzer()
+
+# Step 4: Define new sentiment logic using pos, neu, neg (not compound)
+def classify_sentiment(text):
+    scores = sid.polarity_scores(text)
+    max_score = max(scores['pos'], scores['neu'], scores['neg'])
+    if scores['pos'] == max_score:
+        return 'Positive'
+    elif scores['neg'] == max_score:
+        return 'Negative'
+    else:
+        return 'Neutral'
+
+# Step 5: Apply sentiment classification
+df['Sentiment'] = df['Review'].apply(classify_sentiment)
+
+# Step 6: Count each sentiment type
+sentiment_counts = df['Sentiment'].value_counts()
+
+# Step 7: Print analysis
+print("\n--- Sentiment Analysis Results ---\n")
+print(df.to_string(index=False))
+
+print("\n--- Sentiment Counts ---")
+print(sentiment_counts)
+
+# Step 8: Visualize results
+colors = {'Positive': 'green', 'Negative': 'red', 'Neutral': 'gray'}
+sentiment_counts.plot(kind='bar', color=[colors[s] for s in sentiment_counts.index])
+
+plt.title('Customer Review Sentiment Analysis (Using pos/neu/neg scores)')
+plt.xlabel('Sentiment')
+plt.ylabel('Number of Reviews')
+plt.xticks(rotation=0)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+plt.show()
