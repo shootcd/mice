@@ -1,0 +1,65 @@
+########## amazon
+
+####link to install mysql
+ https://dev.mysql.com/downloads/installer/
+
+pass- root
+
+########## SQL CODE
+CREATE DATABASE amazondata;
+use amazondata;
+show tables;
+select * from amazon_products;
+
+
+
+############python code
+!pip install pymysql
+
+import requests
+from bs4 import BeautifulSoup
+import pymysql
+
+def scrape_amazon_product(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "en-US,en;q=0.9"
+    }
+    res = requests.get(url, headers=headers)
+    if res.status_code != 200:
+        print(f"Failed to fetch page: {res.status_code}")
+        return None
+
+    soup = BeautifulSoup(res.text, 'html.parser')
+    get = lambda tag, cls=None: soup.find(tag, class_=cls) or soup.find(id=tag)
+    
+    return {
+        "title": (get("productTitle") or {}).get_text(strip=True) if get("productTitle") else "N/A",
+        "price": (get("span", "a-price-whole") or {}).get_text(strip=True) if get("span", "a-price-whole") else "N/A",
+        "rating": (get("span", "a-icon-alt") or {}).get_text(strip=True) if get("span", "a-icon-alt") else "N/A"
+    }
+
+def save_to_mysql(data):
+    conn = pymysql.connect(
+        host='localhost', user='root', password='root',
+        database='amazondata', charset='utf8mb4'
+    )
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("""CREATE TABLE IF NOT EXISTS amazon_products (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255), price VARCHAR(20), rating VARCHAR(20))""")
+            cur.execute("INSERT INTO amazon_products (title, price, rating) VALUES (%s, %s, %s)",
+                        (data['title'], data['price'], data['rating']))
+        conn.commit()
+        print("Data saved.")
+
+if __name__ == "__main__":
+    url = "https://www.amazon.in/iPhone-16-Pro-Max-256/dp/B0DGHYPFYB?ref_=ast_sto_dp&th=1"
+
+    product = scrape_amazon_product(url)
+    if product:
+        print("Scraped:", product)
+        save_to_mysql(product)
+    else:
+        print("Scraping failed.")
