@@ -1,0 +1,32 @@
+#############Page rank
+
+import random
+import matplotlib.pyplot as plt
+
+# -------- Link Structure --------
+pages = {
+    'Page1': ['Page2', 'Page3'],
+    'Page2': ['Page3'],
+    'Page3': ['Page1'],
+    'Page4': ['Page1', 'Page2', 'Page3']
+}
+
+# -------- Parameters --------
+visits = {page: 0 for page in pages}
+steps = 100_000
+d = 0.85
+all_pages = list(pages.keys())
+current = random.choice(all_pages)
+
+# -------- Random Walk --------
+for _ in range(steps):
+    if random.random() < d and pages[current]:
+        current = random.choice(pages[current])
+    else:
+        current = random.choice(all_pages)
+    visits[current] += 1
+
+# -------- Output & Plot --------
+print("\nEstimated PageRank:")
+for page, count in sorted(visits.items()):
+    print(f"{page}: {count / steps:.4f}")
