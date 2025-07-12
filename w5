@@ -1,0 +1,53 @@
+######### text mining and web preprocessing
+
+import requests
+from bs4 import BeautifulSoup
+import nltk, re, string
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+
+nltk.download('stopwords')
+
+# -------- Extract meta + content --------
+def extract_web_data(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    res = requests.get(url, headers=headers)
+    if res.status_code != 200:
+        print("Failed to retrieve page."); return None
+
+    soup = BeautifulSoup(res.text, 'html.parser')
+    for tag in soup(['script', 'style']):
+        tag.decompose()
+
+    meta = lambda name: (soup.find('meta', {'name': name}) or {}).get('content', f"No {name}")
+    info = {
+        "Title": soup.title.string.strip() if soup.title else "No title",
+        "Description": meta('description'),
+        "Keywords": meta('keywords'),
+        "Author": meta('author')
+    }
+    text = ' '.join(t.strip() for t in soup.get_text().splitlines() if t.strip())
+    return info, text
+
+# -------- Preprocess text --------
+def preprocess(text):
+    text = re.sub(r'http\S+|[^a-z\s]', '', text.lower())
+    stop_words = set(stopwords.words('english'))
+    stemmer = PorterStemmer()
+    words = text.split()
+    filtered = [stemmer.stem(w) for w in words if w not in stop_words]
+    return ' '.join(filtered)
+
+# -------- Main --------
+if __name__ == "__main__":
+    url = input("Enter URL: ").strip()
+    result = extract_web_data(url)
+
+    if result:
+        meta, text = result
+        print("\n--- Meta Info ---")
+        [print(f"{k}: {v}") for k, v in meta.items()]
+        print("\n--- Raw Text (first 500 chars) ---\n", text[:500], "...\n")
+
+        cleaned = preprocess(text)
+        print("--- Cleaned Text (first 500 chars) ---\n", cleaned[:500], "...")
