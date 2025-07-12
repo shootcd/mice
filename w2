@@ -1,0 +1,54 @@
+#####twitter
+
+
+
+
+
+
+
+
+
+#################alternate code- do in idle######################################
+
+##########command prompt these two codes
+pip install playwright jmespath scrapfly-sdk
+playwright install
+
+
+
+###idle
+from playwright.sync_api import sync_playwright
+
+def scrape_tweet(url: str) -> dict:
+    _xhr_calls = []
+
+    def intercept_response(response):
+        if response.request.resource_type == "xhr":
+            _xhr_calls.append(response)
+        return response
+
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=False)  # Set headless to True if you don't need a visible browser
+        context = browser.new_context(viewport={"width": 1920, "height": 1080})
+        page = context.new_page()
+        page.on("response", intercept_response)
+        page.goto(url)
+        page.wait_for_selector("[data-testid='tweet']")
+
+        # Ensure we wait enough time for all necessary XHR responses to be captured
+        page.wait_for_timeout(5000)  # Adjust time as needed
+
+        tweet_calls = [f for f in _xhr_calls if "TweetResultByRestId" in f.url]
+        for xhr in tweet_calls:
+            try:
+                data = xhr.json()
+                return data['data']['tweetResult']['result']
+            except KeyError as e:
+                print(f"KeyError: {e}")
+                return {}
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                return {}
+
+if __name__ == "__main__":
+    print(scrape_tweet("https://twitter.com/Scrapfly_dev/status/1664267318053179398"))
