@@ -1,0 +1,39 @@
+########## Focused Crawler
+
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+import csv
+
+def focused_crawl(url, keyword, depth=2, visited=None, writer=None, parent="Root"):
+    visited = visited or set()
+    if depth == 0 or url in visited: return
+
+    print(f"Crawling: {url} (Found on: {parent})")
+    visited.add(url)
+
+    try:
+        res = requests.get(url, timeout=5)
+        if res.status_code != 200: return
+
+        soup = BeautifulSoup(res.text, 'html.parser')
+        if keyword.lower() in soup.get_text().lower():
+            print(f"✓ Keyword '{keyword}' found on {url}")
+            if writer: writer.writerow([url, parent])
+
+        links = [urljoin(url, a['href']) for a in soup.find_all('a', href=True)]
+        for link in links:
+            if link.startswith("http"):
+                focused_crawl(link, keyword, depth-1, visited, writer, url)
+
+    except requests.RequestException as e:
+        print(f"Error: {e}")
+
+# -------- Run --------
+start_url = "https://www.royalenfield.com/in/en/home/"
+search_keyword = "Himalayan"
+
+with open("focused_links.csv", "w", newline="", encoding="utf-8") as f:
+    w = csv.writer(f)
+    w.writerow(["URL", "Found On"])
+    focused_crawl(start_url, search_keyword, depth=2, writer=w)
