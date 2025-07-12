@@ -1,0 +1,45 @@
+################ Plagriarism
+
+import requests
+from bs4 import BeautifulSoup
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# 1. Extract text from a fixed webpage (Wikipedia AI page)
+def extract_text_from_url():
+    url = "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        for tag in soup(['script', 'style']):
+            tag.decompose()
+        text = ' '.join(s.strip() for s in soup.stripped_strings)
+        return text
+    except:
+        return ""
+
+# 2. Calculate similarity using TF-IDF + cosine similarity
+def check_plagiarism(local_text, url_text):
+    documents = [local_text, url_text]
+    vectorizer = TfidfVectorizer()
+    tfidf = vectorizer.fit_transform(documents)
+    similarity = cosine_similarity(tfidf[0:1], tfidf[1:2])[0][0]
+    return similarity
+
+# 3. Main program
+if __name__ == "__main__":
+    # Ask user for text input only
+    local_text = input("Enter your text to check for plagiarism:\n")
+
+    # Extract content from fixed URL
+    web_text = extract_text_from_url()
+
+    if web_text:
+        similarity_score = check_plagiarism(local_text, web_text)
+        print(f"\nSimilarity Score: {similarity_score:.2f}")
+        if similarity_score > 0.7:
+            print("⚠️ Possible Plagiarism Detected.")
+        else:
+            print("✅ No significant plagiarism detected.")
+    else:
+        print("Failed to extract content from the source website.")
