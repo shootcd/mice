@@ -1,5 +1,25 @@
 #####twitter
 
+import tweepy
+
+# Replace with your bearer token
+BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAOIP3AEAAAAAx%2Fc7gJO0cQ9KrQiv3IrhWeECHUU%3Dltpi0Td17UVHcEssPoB8prT27rm59nfsEH2S3JW16ZxHYHSdGE"
+
+# Authenticate with Twitter
+client = tweepy.Client(bearer_token=BEARER_TOKEN)
+
+# Define query (e.g., keyword search)
+query = "artificial intelligence lang:en -is:retweet"
+
+# Fetch tweets
+tweets = client.search_recent_tweets(query=query, max_results=10, tweet_fields=['author_id', 'created_at'])
+
+# Display results
+print("\n--- Recent Tweets ---\n")
+for tweet in tweets.data:
+    print(f"Time: {tweet.created_at}")
+    print(f"Author ID: {tweet.author_id}")
+    print(f"Tweet: {tweet.text}\n")
 
 
 
